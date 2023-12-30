@@ -35,11 +35,11 @@ const std::vector<std::string> modle_paths = {
     "obj/knot.obj",
     "obj/knot.obj",
     "obj/knot.obj",
-    "obj/knot.obj",
-    "obj/knot.obj",
-    "obj/knot.obj",
-    "obj/knot.obj",
-    "obj/knot.obj",
+    "obj/rock.obj",
+    "obj/wolf.obj",
+    "obj/cat.obj",
+    "obj/bunny.obj",
+    "obj/rock.obj",
     "obj/drone.obj"
 };
 class MyObject {

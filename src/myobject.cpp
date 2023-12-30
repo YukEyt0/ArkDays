@@ -57,7 +57,7 @@ void MyObject::draw() const {
 
 void MyObject::drawBoundingBox() const {
     glBindVertexArray(_boxVao);
-    glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
@@ -143,8 +143,13 @@ void MyObject::initBoxGLResources() {
         glm::vec3(_boundingBox.max.x, _boundingBox.max.y, _boundingBox.max.z),
     };
 
-    std::vector<uint32_t> boxIndices = {0, 1, 0, 2, 0, 4, 3, 1, 3, 2, 3, 7,
-                                        5, 4, 5, 1, 5, 7, 6, 4, 6, 7, 6, 2};
+    std::vector<uint32_t> boxIndices = {0,1,2,2,3,0,
+                                        1,3,7,7,5,1,
+                                        0,1,5,5,4,0,
+                                        5,4,6,6,7,5,
+                                        0,4,6,6,2,0,
+                                        3,7,6,6,2,3
+                                        };
 
     glGenVertexArrays(1, &_boxVao);
     glGenBuffers(1, &_boxVbo);

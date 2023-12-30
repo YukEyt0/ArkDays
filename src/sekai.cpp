@@ -11,6 +11,8 @@ sekai::sekai(const Options& options) : Application(options) {
     _model_lib.reset(new ModelLibrary(_assetRootDir));
     _texture_lib.reset(new TextrueLibrary(_assetRootDir));
     _shape_lib.reset(new ShapeLibrary);
+    _shape_lib->AddPrism(6,0.5);
+    _shape_lib->AddPrism(7,0.5);
     _player.reset(new ModelOnWorld(_model_lib->getModel(13),0));
     // init time
     _time = 0;
@@ -79,108 +81,6 @@ sekai::sekai(const Options& options) : Application(options) {
     _state = RUN;
 }
 void sekai::initShaders() {
-    /*
-    const char* vsCode =
-        "#version 330 core\n"
-        "layout(location = 0) in vec3 aPosition;\n"
-        "layout(location = 1) in vec3 aNormal;\n"
-        "layout(location = 2) in vec2 aTexCoord;\n"
-
-        "out vec3 fPosition;\n"
-        "out vec3 fNormal;\n"
-
-        "uniform mat4 model;\n"
-        "uniform mat4 view;\n"
-        "uniform mat4 projection;\n"
-
-        "void main() {\n"
-        "    fPosition = vec3(model * vec4(aPosition, 1.0f));\n"
-        "    fNormal = mat3(transpose(inverse(model))) * aNormal;\n"
-        "    gl_Position = projection * view * model * vec4(aPosition, 1.0f);\n"
-        "}\n";
-
-    const char* fsCode =
-        "#version 330 core\n"
-        "in vec3 fPosition;\n"
-        "in vec3 fNormal;\n"
-        "out vec4 color;\n"
-
-        "// material data structure declaration\n"
-        "struct Material {\n"
-        "    vec3 ka;\n"
-        "    vec3 kd;\n"
-        "    vec3 ks;\n"
-        "    float ns;\n"
-        "};\n"
-
-        "// ambient light data structure declaration\n"
-        "struct AmbientLight {\n"
-        "    vec3 color;\n"
-        "    float intensity;\n"
-        "};\n"
-        
-        "// directional light data structure declaration\n"
-        "struct DirectionalLight {\n"
-        "    vec3 direction;\n"
-        "    float intensity;\n"
-        "    vec3 color;\n"
-        "};\n"
-
-        "// spot light data structure declaration\n"
-        "struct SpotLight {\n"
-        "    vec3 position;\n"
-        "    vec3 direction;\n"
-        "    float intensity;\n"
-        "    vec3 color;\n"
-        "    float angle;\n"
-        "    float kc;\n"
-        "    float kl;\n"
-        "    float kq;\n"
-        "};\n"
-
-        "// uniform variables\n"
-        "uniform Material material;\n"
-        "uniform DirectionalLight directionalLight;\n"
-        "uniform SpotLight spotLight;\n"
-        "uniform vec3 viewPos;\n"
-        "uniform AmbientLight ambientLight;\n"
-        
-        "vec3 calcDirectionalLight(vec3 normal,vec3 viewDir) {\n"
-        "    vec3 lightDir = normalize(-directionalLight.direction);\n"
-        "    vec3 ambient = material.ka * ambientLight.color * ambientLight.intensity;\n"
-        "    vec3 diffuse = max(dot(lightDir, normal), 0.0f) * material.kd;\n"
-        "    vec3 reflectDir = reflect(-lightDir,normal);\n"
-        "    vec3 spec = pow(max(dot(viewDir,reflectDir),0.0f),material.ns)*material.ks;\n"
-        "    return directionalLight.intensity * directionalLight.color * (diffuse+spec) + ambient;\n"
-        "}\n"
-
-        "vec3 calcSpotLight(vec3 normal,vec3 viewDir) {\n"
-        "    vec3 lightDir = normalize(spotLight.position - fPosition);\n"
-        "    float theta = acos(-dot(lightDir, normalize(spotLight.direction)));\n"
-        "    vec3 diffuse = spotLight.color * max(dot(lightDir, normal), 0.0f) * material.kd;\n"
-        
-        "    float distance = length(spotLight.position - fPosition);\n"
-        "    vec3 reflectDir = reflect(-lightDir,normal);\n"
-        "    vec3 spec = spotLight.color*pow(max(dot(viewDir,reflectDir),0.0f),material.ns)*material.ks;\n"
-        "    if (theta > spotLight.angle) {\n"
-        "        diffuse = vec3(0.0f, 0.0f, 0.0f);\n"
-        "        spec = vec3(0.0f,0.0f,0.0f);\n"
-        "    }\n"
-        "    return spotLight.intensity * (diffuse+spec);\n"
-        "}\n"
-
-        "void main() {\n"
-        "    vec3 normal = normalize(fNormal);\n"
-        "    vec3 viewDir = normalize(viewPos - fPosition);\n"
-        "    vec3 phongShader = calcDirectionalLight(normal,viewDir) + calcSpotLight(normal,viewDir);\n"
-        "    color = vec4(phongShader, 1.0f);\n"
-        "}\n";
-
-    _shader.reset(new GLSLProgram);
-    _shader->attachVertexShader(vsCode);
-    _shader->attachFragmentShader(fsCode);
-    _shader->link();
-    */
     const char* vsCode_select = 
     "#version 330 core\n"
         "layout(location = 0) in vec3 aPosition;\n"
@@ -586,12 +486,12 @@ void sekai::place_operator() {
         o.swap(_operators[operator_cursor]);
         o->_operator->_model->_transform.position = _map->point2WorldPosition(_operator_movement_controller.x,_operator_movement_controller.y);
         if(bitmap[_operator_movement_controller.x][_operator_movement_controller.y]!=0)
-            o->_operator->_model->_transform.position+=glm::vec3(0,_mapscale,0);
+            o->_operator->_model->_transform.position+=glm::vec3(0,_mapscale*0.9f,0);
         o->_state=OperatorOnWorld::PLACED;
         o->_pos_x = _operator_movement_controller.x;
         o->_pos_y = _operator_movement_controller.y;
         o->hp = o->_operator->_hp;
-        o->_operator->_model->_transform.scale *= glm::vec3(0.3f);
+        o->_operator->_model->_transform.scale *= glm::vec3(0.5f);
         _placed_operators.emplace_back(std::move(o));
         _operators.erase(_operators.begin()+operator_cursor);
         if(_operators.size()!=0)
@@ -674,6 +574,7 @@ void sekai::draw_placed_operators(std::unique_ptr<GLSLProgram>& ref_shader) {
             if(model->enable_textrue) {
                 textrue->unbind();
             }
+            model->is_placed = true;
         }
     }
 
@@ -901,7 +802,7 @@ void sekai::draw_hp() {
             continue;
         auto model = it->_enemy->_model->_transform;
         model.position+=glm::vec3(0.0f,0.3*_mapscale,0.0f);
-        model.scale *= glm::vec3(10.0f,0.5f,1.0f);
+        model.scale = glm::vec3(10.0f,0.5f,1.0f);
         model.lookAt(pos);
         _hpdrawler->draw(model.getLocalMatrix(), it->hp,it->_enemy->_hp);
     }
@@ -967,15 +868,6 @@ void sekai::edit_light() {
     if (!ImGui::Begin("Editing Lights", nullptr, flags)) {
         ImGui::End();
     } else {
-        ImGui::Text("Render Mode");
-        ImGui::Separator();
-
-        ImGui::ColorEdit3("ka##3", (float*)&_material->ka);
-        ImGui::ColorEdit3("kd##3", (float*)&_material->kd);
-        ImGui::ColorEdit3("ks##3", (float*)&_material->ks);
-        ImGui::SliderFloat("ns##3", &_material->ns, 1.0f, 50.0f);
-        ImGui::NewLine();
-
         ImGui::Text("ambient light");
         ImGui::Separator();
         ImGui::SliderFloat("intensity##1", &_ambientLight->intensity, 0.0f, 1.0f);
@@ -1051,6 +943,28 @@ void sekai::edit_object(){
             ImGui::EndCombo();
         }
         ImGui::NewLine();
+
+        ImGui::Text("Derive obj");
+        ImGui::Separator();
+        if(ImGui::Button("Derive selected")) {
+            auto path = _assetRootDir+"obj/";
+            path += std::to_string(model->id);
+            path += ".obj";
+            model->DeriveObjFile(path);
+        }
+        if(ImGui::Button("Derive ALL!")) {
+            auto path = _assetRootDir+"obj/";
+            path += "all.obj";
+            int offset = 0;
+            for(auto it : ModelOnWorld::_model_map) {
+                if(!it.second->is_placed)
+                    continue;
+                if(offset == 0)
+                    offset += (it.second->DeriveObjFile(path,offset));
+                else
+                    offset += (it.second->DeriveObjFile(path,offset,true));
+            }
+        }
         ImGui::End();
     }
 

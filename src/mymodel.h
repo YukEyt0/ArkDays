@@ -32,15 +32,17 @@ public:
         _object->drawBoundingBox();
     }
 
-    int DeriveObjFile(const std::string& dir, const int& offset=0);
+    int DeriveObjFile(const std::string& dir, const int& offset=0, bool append = false);
     bool CollisionDetection(const std::unique_ptr<ModelOnWorld>& other);
     int _textrue_idx;
     std::unique_ptr<MyObject>& _object;
     Material _material;
     Transform _transform;
+    Transform _local_transform;
     int id;
     static int index;
     static std::map<int,std::unique_ptr<ModelOnWorld>&> _model_map;
     bool enable_textrue = false;
+    bool is_placed = false;
 };
 

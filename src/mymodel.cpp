@@ -11,8 +11,9 @@ ModelOnWorld::ModelOnWorld(std::unique_ptr<MyObject>& object, int textrue_idx, M
         auto x_length = max.x-min.x;
         auto y_length = max.y-min.y;
         auto z_length = max.z-min.z;
+        auto max_length = std::max(x_length,std::max(y_length,z_length));
         _transform.position -= min;
-        _transform.scale *= glm::vec3{_mapscale/x_length,_mapscale/y_length,_mapscale/z_length};
+        _transform.scale *= glm::vec3{_mapscale/max_length,_mapscale/max_length,_mapscale/max_length};
         id = ++index;
 }
 
@@ -52,9 +53,12 @@ bool ModelOnWorld::CollisionDetection(const std::unique_ptr<ModelOnWorld>& other
     return xaxis&&yaxis&&zaxis;
 }
 
-int ModelOnWorld::DeriveObjFile(const std::string& dir, const int & offset) {
+int ModelOnWorld::DeriveObjFile(const std::string& dir, const int & offset, bool append) {
     std::ofstream os;
-    os.open(dir);
+    if(append) 
+        os.open(dir,std::ios::app|std::ios::binary);
+    else
+        os.open(dir,std::ios::out|std::ios::binary);
     if(!os.is_open())
         throw;
     auto vertex_transform = _transform.getLocalMatrix();
@@ -63,16 +67,16 @@ int ModelOnWorld::DeriveObjFile(const std::string& dir, const int & offset) {
         auto trans_pos = glm::vec3{vertex_transform*glm::vec4(it.position,1.0f)};
         auto trans_norm = normal_transform * it.normal;
         auto textcoord = it.texCoord;
-        os << "v" << trans_pos.x << " " << trans_pos.y << " " << trans_pos.z << "\n ";
-        os << "vn" << trans_norm.x << " " << trans_norm.y << " " << trans_norm.z << "\n ";
-        os << "vt " << textcoord.x << " " << textcoord.y << "\n";
+        os << "v "<< (float)trans_pos.x << " " << (float)trans_pos.y << " " << (float)trans_pos.z << "\n";
+        os << "vn " << (float)trans_norm.x << " " << (float)trans_norm.y << " " << (float)trans_norm.z << "\n";
+        os << "vt "<< (float)textcoord.x << " " << (float)textcoord.y << "\n";
     }
     auto indices = this->_object->getIndices();
     for(int i = 0; i<indices.size();i+=3) {
-        os << "f " << indices[i] + 1 + offset << "/" << indices[i] + 1 + offset << "/" << indices[i] + 1 + offset<< " ";
+        os << "f " <<" "<< indices[i] + 1 + offset << "/" << indices[i] + 1 + offset << "/" << indices[i] + 1 + offset<< " ";
         os << indices[i + 1] + 1 + offset << "/" << indices[i + 1] + 1 + offset<< "/" << indices[i + 1] + 1 + offset<< " ";
         os << indices[i + 2] + 1 + offset<< "/" << indices[i + 2] + 1 + offset<< "/" << indices[i + 2] + 1 + offset<< "\n";
     }
     os.close();
-    return offset+_object->getVertexCount();
+    return _object->getVertexCount();
 }

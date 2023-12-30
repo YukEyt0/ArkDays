@@ -132,26 +132,7 @@ private:
 };
 
 const std::vector<int> operator_list = {0,0,0,1,1,2,2,3,3,4,4};
-/*
-struct RangeLibrary {
-    RangeLibrary() {
-        _ranges.emplace_back(
-            std::vector<int>{-1,0,1,-1,0,1,-1,0,1,-1,0,1,-1,0,1}, std::vector<int>{0,0,0,1,1,1,2,2,2,3,3,3,4,4,4}
-        );
-        _ranges.emplace_back(
-            std::vector<int>{0,0}, std::vector<int>{0,1}
-        );
-        _ranges.emplace_back(
-            std::vector<int>{-1,0,1,-1,0,1,-1,0,1,-1,0,1,0}, std::vector<int>{0,0,0,1,1,1,2,2,2,3,3,3,4}
-        );
-        _ranges.emplace_back(
-            std::vector<int>{int(0)}, std::vector<int>{int(0)}
-        );
-    }
-    std::vector<Range> _ranges;
-    Range getRange(int index) {return _ranges.at(index);}
-};
-*/
+
 enum OperatorType {
     VANGUARD,
     DEFENDER,

@@ -61,7 +61,6 @@ public:
     std::unique_ptr<SummonList> _summonlist;
     std::unique_ptr<PathLibrary> _pathlib;
     std::vector<std::unique_ptr<ModelOnWorld>> _blocks;
-    
 };
 
 

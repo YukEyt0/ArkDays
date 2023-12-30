@@ -42,12 +42,12 @@ public:
 class EnemyLibrary {
 public:
     EnemyLibrary() {
-        _enemies.emplace_back(Enemy(1050.0f,185.0f,0.0f,1.0f,1.7f,_model_lib->getModel(0),0));
-        _enemies.emplace_back(Enemy(1650.0f,200.0f,100.0f,1.1f,2.0f,_model_lib->getModel(1),0));
+        _enemies.emplace_back(Enemy(1050.0f,185.0f,0.0f,1.0f,1.7f,_shape_lib->getShape(3),0));
+        _enemies.emplace_back(Enemy(1650.0f,200.0f,100.0f,1.1f,2.0f,_shape_lib->getShape(2),0));
         _enemies.emplace_back(Enemy(5000.0f,500.0f,50.0f,0.8,3.0f,_model_lib->getModel(2),0));
-        _enemies.emplace_back(Enemy(1550.0f,180.0f,50.0f,1.0f,2.7f,_model_lib->getModel(3),0));
-        _enemies.emplace_back(Enemy(2050.0f,240.0f,250.0f,1.0f,2.0f,_model_lib->getModel(4),0));
-        _enemies.emplace_back(Enemy(1700.0f,250.0f,50.0f,1.1f,2.0f,_model_lib->getModel(6),0));
+        _enemies.emplace_back(Enemy(1550.0f,180.0f,50.0f,1.0f,2.7f,_shape_lib->getShape(4),0));
+        _enemies.emplace_back(Enemy(2050.0f,240.0f,250.0f,1.0f,2.0f,_shape_lib->getShape(1),0));
+        _enemies.emplace_back(Enemy(1700.0f,250.0f,50.0f,1.1f,2.0f,_shape_lib->getShape(0),0));
     }
     std::unique_ptr<Enemy> getEnemy(int idx) {
         return std::make_unique<Enemy>(_enemies.at(idx));

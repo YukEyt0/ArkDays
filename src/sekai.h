@@ -165,6 +165,7 @@ private:
             if(ref_enemy->_enemy->_model->enable_textrue) {
                 textrue->unbind();
             }
+            ref_enemy->_enemy->_model->is_placed = true;
         }
     }
 

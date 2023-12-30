@@ -14,7 +14,13 @@ extern std::unique_ptr<TextrueLibrary> _texture_lib;
                 z = ((float)j+0.5)*_mapscale;
                 auto type = bitmap[i][j];
                 std::unique_ptr<ModelOnWorld> block;
-                block.reset(new ModelOnWorld{_shape_lib->getShape(0),type});
+                if(type == 2) {
+                    block.reset(new ModelOnWorld{_shape_lib->getShape(0),type});
+                }
+                else if (type == 6)
+                    block.reset(new ModelOnWorld{_shape_lib->getShape(1),type});
+                else
+                    block.reset(new ModelOnWorld{_shape_lib->getShape(0),type});
                 block->_transform.position += glm::vec3(x, y, z);
                 if(type == 0 || type == 1)
                     block->_transform.position += glm::vec3(0, -_mapscale, 0);
@@ -47,7 +53,8 @@ extern std::unique_ptr<TextrueLibrary> _texture_lib;
                 ref_shader->setUniformVec3("material.ks", block->_material.ks);
                 ref_shader->setUniformVec3("material.kd", block->_material.kd);
                 ref_shader->setUniformFloat("material.ns", block->_material.ns);
-                ref_shader->setUniformMat4("model",block->_transform.getLocalMatrix());
+                auto model = block->_transform.getLocalMatrix()*block->_local_transform.getLocalMatrix();
+                ref_shader->setUniformMat4("model",model);
                 auto& textrue = _texture_lib->getTextureRef(block->_textrue_idx);
                 if(block->enable_textrue) {
                     textrue->bind(0);
@@ -57,6 +64,7 @@ extern std::unique_ptr<TextrueLibrary> _texture_lib;
                 if(block->enable_textrue) {
                     textrue->unbind();
                 }
+                block->is_placed = true;
             }
         }
     }
