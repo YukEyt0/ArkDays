@@ -36,20 +36,6 @@ bool ModelOnWorld::CollisionDetection(const std::unique_ptr<ModelOnWorld>& other
     auto xaxis = glm::abs(std::max(max1.x,max2.x)-std::min(min1.x,min2.x)) < glm::abs(max1.x+max2.x-min1.x-min2.x);
     auto yaxis = glm::abs(std::max(max1.y,max2.y)-std::min(min1.y,min2.y)) < glm::abs(max1.y+max2.y-min1.y-min2.y);
     auto zaxis = glm::abs(std::max(max1.z,max2.z)-std::min(min1.z,min2.z)) < glm::abs(max1.z+max2.z-min1.z-min2.z);
-    if(xaxis&&yaxis&&zaxis) {
-        std::cout << max1.x  << ", "
-        << max1.y  << ", "
-        << max1.z  << std::endl;
-        std::cout << min1.x << ", "
-        << min1.y << ", "
-        << min1.z << std::endl;
-        std::cout << max2.x << ", "
-        << max2.y << ", "
-        << max2.z << std::endl;
-        std::cout << min2.x << ", "
-        << min2.y << ", "
-        << min2.z << std::endl;
-    }
     return xaxis&&yaxis&&zaxis;
 }
 

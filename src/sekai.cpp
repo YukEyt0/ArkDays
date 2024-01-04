@@ -189,15 +189,16 @@ void sekai::initShaders() {
         "    vec3 lightDir = normalize(spotLight.position - fPosition);\n"
         "    float theta = acos(-dot(lightDir, normalize(spotLight.direction)));\n"
         "    vec3 diffuse = spotLight.color * max(dot(lightDir, normal), 0.0f) * texture(cubemap,texCoord).rgb;\n"
-        
         "    float distance = length(spotLight.position - fPosition);\n"
+        "    float attenuation = 1.0f / (spotLight.kc + spotLight.kl * distance + spotLight.kq * "
+        "distance * distance);\n"
         "    vec3 reflectDir = reflect(-lightDir,normal);\n"
         "    vec3 spec = spotLight.color*pow(max(dot(viewDir,reflectDir),0.0f),material.ns)*material.ks;\n"
         "    if (theta > spotLight.angle) {\n"
         "        diffuse = vec3(0.0f, 0.0f, 0.0f);\n"
         "        spec = vec3(0.0f,0.0f,0.0f);\n"
         "    }\n"
-        "    return spotLight.intensity * (diffuse+spec);\n"
+        "    return spotLight.intensity * attenuation * (diffuse+spec) ;\n"
         "}\n"
 
         "void main() {\n"
@@ -214,8 +215,6 @@ void sekai::initShaders() {
 }
 
 void sekai::handleInput() {
-    if(_input.mouse.press.left==GLFW_PRESS)
-        std::cout <<  _cameras[0]->transform.position.x << ", " << _cameras[0]->transform.position.y << ", " << _cameras[0]->transform.position.z << std::endl; 
     deal_rearrange();
     if (_input.keyboard.keyStates[GLFW_KEY_F1] == GLFW_PRESS&&!_operator_movement_controller.scpressed) {
         _operator_movement_controller.scpressed = true;
@@ -354,6 +353,9 @@ void sekai::renderFrame() {
     _textcoord_shader->setUniformVec3("spotLight.direction", _spotLight->transform.getFront());
     _textcoord_shader->setUniformFloat("spotLight.intensity", _spotLight->intensity);
     _textcoord_shader->setUniformVec3("spotLight.color", _spotLight->color);
+    _textcoord_shader->setUniformFloat("spotLight.kc",_spotLight->kc);
+    _textcoord_shader->setUniformFloat("spotLight.kl",_spotLight->kl);
+    _textcoord_shader->setUniformFloat("spotLight.kq",_spotLight->kq);
     _textcoord_shader->setUniformFloat("spotLight.angle", _spotLight->angle);
     _textcoord_shader->setUniformVec3(
         "directionalLight.direction", _directionalLight->transform.getFront());
@@ -516,7 +518,6 @@ void sekai::handle_operator_movement_input() {
                 if(_input.mouse.press.left==GLFW_PRESS&&!_operator_movement_controller.rpressed&&!_operator_movement_controller.lpressed) {
                     processSelection(_input.mouse.move.xNow,_input.mouse.move.yNow,_operator_movement_controller.x,_operator_movement_controller.y);
                     _operator_state = PLACING;
-                    std::cout << _operator_movement_controller.x << ", " << _operator_movement_controller.y << std::endl;
                     _operator_movement_controller.mlpressed = true;
                 }
                 break;
@@ -524,7 +525,6 @@ void sekai::handle_operator_movement_input() {
                 if(_input.mouse.press.left==GLFW_RELEASE&&_operator_movement_controller.mlpressed) {
                     int block_type = bitmap[_operator_movement_controller.x][_operator_movement_controller.y];
                     auto operator_type = _operators[operator_cursor]->_operator->_type;
-                    std::cout << block_type << ", " << operator_type << std::endl;
                     auto valid = (block_type==0&&(operator_type==OperatorType::DEFENDER||operator_type==OperatorType::VANGUARD))
                     || (block_type==2&&(operator_type==OperatorType::SNIPER||operator_type==OperatorType::CASTER||operator_type==OperatorType::MEDIC));
                     if(!valid) {
@@ -779,10 +779,6 @@ bool sekai::PlayerCollisionDetection() {
         if(it.second->id==_player->id)
             continue;
         if(_player->CollisionDetection(it.second)) {
-            std::cout << "Collision with id: " << it.first << " Location: " 
-            << it.second->_transform.position.x << ", "
-            << it.second->_transform.position.y << ", "
-            << it.second->_transform.position.z << std::endl;
             return false;
         }   
     }
@@ -886,6 +882,9 @@ void sekai::edit_light() {
         ImGui::Text("spot light");
         ImGui::Separator();
         ImGui::SliderFloat("intensity##3", &_spotLight->intensity, 0.0f, 1.0f);
+        ImGui::SliderFloat("kc",&_spotLight->kc,0.0f,1.0f);
+        ImGui::SliderFloat("kl",&_spotLight->kl,0.0f,1.0f);
+        ImGui::SliderFloat("kq",&_spotLight->kq,0.0f,1.0f);
         ImGui::ColorEdit3("color##3", (float*)&_spotLight->color);
         ImGui::SliderFloat(
             "angle##3", (float*)&_spotLight->angle, 0.0f, glm::radians(180.0f), "%f rad");
@@ -943,7 +942,24 @@ void sekai::edit_object(){
             ImGui::EndCombo();
         }
         ImGui::NewLine();
-
+        ImGui::Text("Transform");
+        ImGui::Separator();
+        ImGui::Text("id = %d",model->id);
+        ImGui::SliderFloat("scale.x", &((model->_transform.scale.x)), 0.1f, 20.0f);
+        ImGui::SliderFloat("scale.y", &((model->_transform.scale.y)), 0.1f, 20.0f);
+        ImGui::SliderFloat("scale.z", &((model->_transform.scale.z)), 0.1f, 20.0f);
+        ImGui::SliderFloat("rotation.x",&(model->_transform.rotation.x),-1.0f,1.0f);
+        ImGui::SliderFloat("rotation.y",&(model->_transform.rotation.y),-1.0f,1.0f);
+        ImGui::SliderFloat("rotation.z",&(model->_transform.rotation.z),-1.0f,1.0f);
+        static bool rot;
+        static float speed;
+        ImGui::Checkbox("Enable Rotating",&rot);
+        ImGui::SliderFloat("rotation speed",&speed,0.1,10.0);
+        if(rot) {
+            auto angle = glm::radians(_deltaTime * speed);
+            model->_transform.rotation = glm::angleAxis(angle,model->_transform.getDefaultUp()) * model->_transform.rotation;
+        }
+        ImGui::NewLine();
         ImGui::Text("Derive obj");
         ImGui::Separator();
         if(ImGui::Button("Derive selected")) {
